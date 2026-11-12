@@ -1,37 +1,306 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title>Ze Yi Woong</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<style>
-			@font-face {
-				font-family: "Paper Mono";
-				src: url("fonts/PaperMono[wght].woff2") format("woff2"),
-				     url("fonts/PaperMono[wght].ttf") format("truetype");
-				font-weight: 100 800;   /* weight range of the variable font */
-				font-style: normal;
-				font-display: swap;
-			}
-			body {
-				background-color: black;
-				color: white;
-				font-family: "Paper Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-				font-weight: 500;
-				font-size: large;
-				font-feature-settings: "ss01" 1;
-				text-align: justify;
-				box-sizing: border-box;
-				width: 100%;
-				max-width: 21cm;
-				min-height: 29.7cm;
-				padding: clamp(1rem, 8vw, 2.5cm);
-				margin: 0 auto;
-			}
-		</style>
-	</head>
-	<body>
-		<p style="margin-bottom: 0;">Hi, my name is</p>
-		<h1 style="display: inline; margin-top: 0;">Ze Yi Woong</h1> <p style="display: inline;">[zeiː woːŋ]</p>
-		<p>lorem ipsum dolor sit amet consectetur adipiscing elit soluta elit qui cillum quod officia dignissimos dolor mollitia odio voluptas voluptas cillum assumenda labore ut nihil qui ut consequat similique expedita assumenda et voluptas est voluptate aut possimus quas consectetur anim optio consectetur et est omnis pariatur dignissimos ad officia laborum soluta minus incididunt quas deleniti exercitation incididunt ea id quos et imperdiet quo voluptatum et deleniti in id quibusdam laboris provident dolorum velit deserunt anim dolor cupidatat voluptate culpa fuga amet qui consectetur soluta commodo expedita voluptas reprehenderit nihil provident nostrud odio nostrud maxime qui qui dolore est do expedita deleniti maxime officia tempore quibusdam dolore est dolorem nostrud dolor autem voluptas in dolore id irure non fugiat laboris velit ex culpa dolore consequatur nisi deserunt animi autem sint sunt assumenda deserunt cumque voluptate est eum qui et qui ut est quas eligendi excepturi exercitation occaecat minim iusto animi facere</p>
-	</body>
+<head>
+	<meta charset="utf-8">
+	<title>Ze Yi Woong</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+		/* Font */
+		@import url('https://fonts.googleapis.com/css2?family=Libertinus+Serif:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap');
+		/* Google serves Noto Serif SC pre-split into unicode-range slices, so the browser only downloads the slices for characters actually on the page */
+		@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
+
+
+		html { background: white; }
+
+		body {
+			margin: 0;
+			padding-block: 2.5cm;          /* top/bottom margin, applied once */
+			color: black;
+			font-family: "Libertinus Serif", serif; 
+			font-size: large;
+			line-height: 1.5;              /* fixed, so Noto Serif SC's taller metrics don't make Chinese lines taller */
+			text-align: justify;
+		}
+
+		/* One English/Chinese pair = one row, split exactly in half */
+		.row {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			align-items: start;            /* both start at the same height, end independently */
+		}
+
+		/* Each half is an A4-width column, centered in its own panel */
+		.row > * {
+			box-sizing: border-box;
+			width: 100%;
+			max-width: 21cm;
+			margin-inline: auto;
+			padding-inline: clamp(1rem, 4vw, 2.5cm);
+		}
+
+		/* Chinese needs a CJK fallback font */
+		:lang(zh) {
+			font-family: "Libertinus Serif", "Noto Serif SC", "Noto Serif CJK SC",
+			             "Songti SC", "SimSun", serif;
+		}
+
+		/* Simple vertical timeline: one .tl-item per entry, drawn as a line with a dot.
+		   Consecutive rows have no gap, so the line runs unbroken. */
+		.tl-item {
+			position: relative;
+			margin-left: 6px;
+			padding: 0 0 1.5rem 1.25rem;
+			text-align: left;
+			--dot-y: 0.64em;               /* vertical centre of the dot = middle of the date line */
+		}
+		/* The line (::after) and dot (::before) are both centred on the item's left edge */
+		.tl-item::after {
+			content: "";
+			position: absolute;
+			left: -1px;
+			width: 2px;
+			top: 0;
+			bottom: 0;
+			background: currentColor;
+		}
+		.tl-item::before {
+			content: "";
+			position: absolute;
+			left: -5px;
+			top: calc(var(--dot-y) - 5px);
+			width: 10px;
+			height: 10px;
+			border-radius: 50%;
+			background: currentColor;
+			z-index: 1;
+		}
+		.tl-first::after { top: var(--dot-y); }            /* start at the first dot, not above it */
+		.tl-last::after  { bottom: auto; height: var(--dot-y); padding: 0; } /* end at the last dot */
+		.tl-last { padding-bottom: 0; }
+		/* In timeline rows both halves stretch to the taller one, so the shorter side's line doesn't break */
+		.row:has(.tl-item) { align-items: stretch; }
+		.row > :has(> .tl-item) { display: flex; }
+		.tl-item { flex: 1; }
+		/* The line and dots are backgrounds, which browsers drop when printing unless told otherwise */
+		.tl-item, .tl-item::before, .tl-item::after {
+			-webkit-print-color-adjust: exact;
+			print-color-adjust: exact;
+		}
+		.tl-item > * { margin: 0; }
+		.tl-date  { font-size: 0.85em; opacity: 0.65; }
+		.tl-title { font-weight: 700; }
+
+		/* Small screens: all English first, then all Chinese */
+		@media (max-width: 30cm) {
+			/* Dissolve the rows so all English sections sort before all Chinese ones */
+			body { padding: clamp(1rem, 8vw, 2.5cm); display: grid; }
+			.row { display: contents; }
+			.row > [lang="en"] { order: 1; }
+			.row > [lang="zh"] { order: 2; }
+		}
+
+		/* Printing: exactly 2.5cm page margins; body padding would add to them, so drop it.
+		   Kept last so it wins over the small-screen rule above. */
+		@page { margin: 2.5cm; }
+		@media print {
+			body { padding: 0; }
+			.row > * { padding-inline: 0; max-width: none; }   /* the halves' own side padding would add to the margin */
+			.row:first-child p:first-child { margin-top: 0; }  /* so would the first paragraph's top margin */
+			/* English prints first, then Chinese: start the first Chinese block on a new page */
+			.row:first-child > [lang="zh"] { break-before: page; page-break-before: always; }
+		}
+	</style>
+</head>
+<body>
+	<div class="row">
+		<div lang="en">
+			<p style="margin-bottom: 0;">Hi, my name is</p>
+			<h1 style="display: inline;">Ze Yi Woong</h1> <span>[zeiː woːŋ]</span>
+		</div>
+		<div lang="zh">
+			<p style="margin-bottom: 0;">你好，我叫</p>
+			<h1 style="display: inline;">黄则义</h1> <span>huáng zé yì</span>
+		</div>
+	</div>
+
+	<div class="row">
+		<div lang="en">I started off into programming during the pandemic, explored around various concepts such as web backend, game dev, embedded systems, through programming languages like Python, Java/Kotlin, C, C++ and Rust. I even went into the local competitive programming scene, learning fundamental data structures and algorithms on the way. Got interested and passionate about electrical and electronics stuff the moment when I joined the electrical stream in my high school, and now I'm on my 5th year studying it, currently a bachelors student in <a href="https://www.monash.edu.my/" target="_blank" rel="noopener noreferrer">Monash University Malaysia</a>. </div>
+		<div lang="zh">当年疫情我接触了编程，利用了Python、Java／Kotlin、C、C++和Rust在网页后台、游戏开发和嵌入式系统等概念之间兜兜转转。当时的我甚至加入了竞技编程，顺带学了些基础的数据结构与算法设计。后来高中进入了电机科，开始对电机电子充满热忱。至此已经是我第五年沉浸在这门学问之中，目前于<a href="https://www.monash.edu.my/" target="_blank" rel="noopener noreferrer">莫纳什大学马来西亚分校</a>修读学士课程。</div>
+	</div>
+
+	<div class="row">
+		<div lang="en"><h2>Education</h2></div>
+		<div lang="zh"><h2>学历</h2></div>
+	</div>
+
+	<div class="row">
+		<div lang="en"><div class="tl-item tl-first">
+			<div class="tl-date">2025 – Present</div>
+			<div class="tl-title">Monash University Malaysia</div>
+			<div>
+				<ul style="margin: 0; padding-left: 1.1em;">
+					<li>
+						Current grade as of Year 1 Sem 2:
+						<ul style="margin: 0; padding-left: 1.1em;">
+							<li>CGPA: 4.0</li>
+							<li>WAM: 89.889</li>
+						</ul>
+					</li>
+					<li>Vice President of Roboclub</li>
+					<li>
+						Researching in: 
+						<ul style="margin: 0; padding-left: 1.1em;">
+							<li>Visible Light Communication</br>Machine Learning Integration in TX Side using Arduino Uno Q</li>
+							<li>Noisy Galvanic Vestibular Stimulation Device</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+		</div></div>
+		<div lang="zh"><div class="tl-item tl-first">
+			<div class="tl-date">2025 – 至今</div>
+			<div class="tl-title">莫纳什大学马来西亚分校</div>
+			<div>
+				<ul style="margin: 0; padding-left: 1.1em;">
+					<li>
+						目前成绩，截至大一第二学期:
+						<ul style="margin: 0; padding-left: 1.1em;">
+							<li>CGPA：4.0</li>
+							<li>WAM：89.889</li>
+						</ul>
+					</li>
+					<li>机器人学会副会长</li>
+					<li>
+						当前研究： 
+						<ul style="margin: 0; padding-left: 1.1em;">
+							<li>可视光通信</br>基于 Arduino Uno Q 的发射端机器学习集成</li>
+							<li>噪声式电前庭刺激装置</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+		</div></div>
+	</div>
+
+	<div class="row">
+		<div lang="en"><div class="tl-item">
+			<div class="tl-date">2019 – 2024</div>
+			<div class="tl-title">Foon Yew High School - Kulai</div>
+			<div>
+				<ul style="margin: 0; padding-left: 1.1em;">
+					<li>Stream: Electrical & Electronics</li>
+					<li>
+						UEC Results:
+						<ul style="margin: 0; padding-left: 1.1em;">
+							<li>Junior UEC: 4As, 3Bs</li>
+							<li>Senior UEC: 5 A1s, 2 A2s, 2 B3s, 1 B4</li>
+						</ul>
+					<li>President of Micro Society</li>
+					<li>Captain of Informatics Team</li>
+					<li>Core Member of Robotics Team</li>
+				</ul>
+			</div>
+		</div></div>
+		<div lang="zh"><div class="tl-item">
+			<div class="tl-date">2019 – 2024</div>
+			<div class="tl-title">宽柔中学古来分校</div>
+			<div>
+				<ul style="margin: 0; padding-left: 1.1em;">
+					<li>科系：电机电子科</li>
+					<li>
+						统考成绩：
+						<ul style="margin: 0; padding-left: 1.1em;">
+							<li>初中统考：4As、3Bs</li>
+							<li>高中统考：5 A1s、2 A2s、2 B3s、1 B4</li>
+						</ul>
+					<li>电脑协会团长</li>
+					<li>资讯校队队长</li>
+					<li>机器人校队核心成员</li>
+				</ul>
+			</div>
+		</div></div>
+	</div>
+
+	<div class="row">
+		<div lang="en"><div class="tl-item tl-last">
+			<div class="tl-date">2013 – 2018</div>
+			<div class="tl-title">S.J.K. (C) Kuo Kuang</div>
+		</div></div>
+		<div lang="zh"><div class="tl-item tl-last">
+			<div class="tl-date">2013 – 2018</div>
+			<div class="tl-title">士古来国光一校</div>
+		</div></div>
+	</div>
+
+	<div class="row">
+		<div lang="en"><h2>Work Experience</h2></div>
+		<div lang="zh"><h2>工作经验</h2></div>
+	</div>
+
+	<!-- Timeline: one row per entry (English | Chinese). Copy a row to add more; the first item of each language has class "tl-first" and the final one "tl-last". -->
+	<div class="row">
+		<div lang="en"><div class="tl-item tl-first">
+			<div class="tl-date">2024 – Present</div>
+			<div class="tl-title">Lorem Ipsum Dolor</div>
+			<div>Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco.</div>
+		</div></div>
+		<div lang="zh"><div class="tl-item tl-first">
+			<div class="tl-date">2024 – 至今</div>
+			<div class="tl-title">春风拂面</div>
+			<div>山间的小路蜿蜒向前，远处的云慢慢散开。人们边走边谈，把旧日的故事一一说给风听，日子在不知不觉中变得柔和。</div>
+		</div></div>
+	</div>
+
+	<div class="row">
+		<div lang="en"><div class="tl-item">
+			<div class="tl-date">2022 – 2024</div>
+			<div class="tl-title">Sit Amet Consectetur</div>
+			<div>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.</div>
+		</div></div>
+		<div lang="zh"><div class="tl-item">
+			<div class="tl-date">2022 – 2024</div>
+			<div class="tl-title">石桥流水</div>
+			<div>河水从古老的石桥下流过，带着远方的消息。旅人在桥头停步，望着水面出神，仿佛听见了无数脚步留下的回声。</div>
+		</div></div>
+	</div>
+
+	<div class="row">
+		<div lang="en"><div class="tl-item tl-last">
+			<div class="tl-date">2020 – 2022</div>
+			<div class="tl-title">Adipiscing Elit</div>
+			<div>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore.</div>
+		</div></div>
+		<div lang="zh"><div class="tl-item tl-last">
+			<div class="tl-date">2020 – 2022</div>
+			<div class="tl-title">夜深人静</div>
+			<div>夜深了，城市渐渐安静下来，只有远处的灯火还在闪烁。窗边的人合上书，端起一杯尚有余温的茶，心里忽然很踏实。</div>
+		</div></div>
+	</div>
+
+	<div class="row">
+		<div lang="en"><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p></div>
+		<div lang="zh"><p>春风拂过山岗，远处的云慢慢散开，阳光落在安静的湖面上。人们沿着小路缓步而行，谈起旧日的故事，也谈起尚未到来的明天。时间在这样的午后显得格外柔和。</p></div>
+	</div>
+
+	<div class="row">
+		<div lang="en"><p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p></div>
+		<div lang="zh"><p>老屋门前的那棵树已经很高了，枝叶在风中轻轻摇动。每到秋天，落叶铺满院子，孩子们追逐嬉戏，笑声传得很远。那些平凡的日子，后来都成了最温暖的记忆。</p></div>
+	</div>
+
+	<div class="row">
+		<div lang="en"><p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p></div>
+		<div lang="zh"><p>河水从古老的石桥下流过，带着远方的消息，也带走了岸边的倒影。旅人在桥头停步，望着水面出神，仿佛听见了千百年来无数脚步留下的回声。</p></div>
+	</div>
+
+	<div class="row">
+		<div lang="en"><p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.</p></div>
+		<div lang="zh"><p>夜深了，城市渐渐安静下来，只有远处的灯火还在闪烁。窗边的人合上书，端起一杯尚有余温的茶，心里忽然很踏实，好像一切都刚刚好。</p></div>
+	</div>
+
+	<div class="row">
+		<div lang="en"><p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.</p></div>
+		<div lang="zh"><p>清晨的集市渐渐热闹起来，摊贩们高声叫卖，空气里弥漫着新鲜面包和水果的香气。人群来来往往，每个人都带着各自的心事，却又在这片喧嚣里短暂地相遇。</p></div>
+	</div>
+</body>
 </html>
